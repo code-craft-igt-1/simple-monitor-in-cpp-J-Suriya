@@ -46,3 +46,15 @@ Shorten the Semantic distance
 - Functional to express relation between input and output
 - Object oriented to encapsulate state with actions
 - Apect oriented to capture repeating aspects
+
+# Vitals Monitor
+
+## Extensions Implemented
+
+1. **Early Warning**:
+    - Introduced warning levels with a tolerance of 1.5% of the upper limit for temperature, pulse rate, and SPO2.
+    - Added warning messages for values approaching critical levels.
+
+2. **Support a Language in Addition to English**:
+    - Added support for German language.
+    - Messages are displayed based on the global `language` variable.
