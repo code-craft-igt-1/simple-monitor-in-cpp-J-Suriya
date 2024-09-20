@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include <map>
 #include <iostream>
 
 std::string language = "EN";
@@ -34,22 +35,33 @@ bool isSpo2Warning(float spo2) {
 }
 
 const char* getMessage(const char* key) {
-    if (language == "DE") {
-        if (key == "ALERT") return "Vitalwerte sind nicht in Ordnung!";
-        if (key == "TEMP_HYPO_WARNING") return "Warnung: Annäherung an Hypothermie";
-        if (key == "TEMP_HYPER_WARNING") return "Warnung: Annäherung an Hyperthermie";
-        if (key == "PULSE_LOW_WARNING") return "Warnung: Annäherung an niedrigen Puls";
-        if (key == "PULSE_HIGH_WARNING") return "Warnung: Annäherung an hohen Puls";
-        if (key == "SPO2_WARNING") return "Warnung: Annäherung an niedrigen SPO2";
+    static const std::map<std::string, const char*> messages_de = {
+        {"ALERT", "Vitalwerte sind nicht in Ordnung!"},
+        {"TEMP_HYPO_WARNING", "Warnung: Annäherung an Hypothermie"},
+        {"TEMP_HYPER_WARNING", "Warnung: Annäherung an Hyperthermie"},
+        {"PULSE_LOW_WARNING", "Warnung: Annäherung an niedrigen Puls"},
+        {"PULSE_HIGH_WARNING", "Warnung: Annäherung an hohen Puls"},
+        {"SPO2_WARNING", "Warnung: Annäherung an niedrigen SPO2"}
+    };
+
+    static const std::map<std::string, const char*> messages_en = {
+        {"ALERT", "Vitals are not okay!"},
+        {"TEMP_HYPO_WARNING", "Warning: Approaching hypothermia"},
+        {"TEMP_HYPER_WARNING", "Warning: Approaching hyperthermia"},
+        {"PULSE_LOW_WARNING", "Warning: Approaching low pulse rate"},
+        {"PULSE_HIGH_WARNING", "Warning: Approaching high pulse rate"},
+        {"SPO2_WARNING", "Warning: Approaching low SPO2"}
+    };
+
+    const std::map<std::string, const char*>& messages = (language == "DE") ? messages_de : messages_en;
+
+    auto it = messages.find(key);
+    if (it != messages.end()) {
+        return it->second;
     } else {
-        if (key == "ALERT") return "Vitals are not okay!";
-        if (key == "TEMP_HYPO_WARNING") return "Warning: Approaching hypothermia";
-        if (key == "TEMP_HYPER_WARNING") return "Warning: Approaching hyperthermia";
-        if (key == "PULSE_LOW_WARNING") return "Warning: Approaching low pulse rate";
-        if (key == "PULSE_HIGH_WARNING") return "Warning: Approaching high pulse rate";
-        if (key == "SPO2_WARNING") return "Warning: Approaching low SPO2";
+        return "Unknown key";
     }
-    return "";
+
 }
 
 void alert(const char* message) {
@@ -59,11 +71,14 @@ void alert(const char* message) {
 void checkTemperature(float temperature) {
     if (isTemperatureCritical(temperature)) {
         alert(getMessage("ALERT"));
-    } else if (isTemperatureWarning(temperature)) {
-        if (temperature < 36.0 + TEMP_WARNING_TOLERANCE) {
-            alert(getMessage("TEMP_HYPO_WARNING"));
-        } else {
-            alert(getMessage("TEMP_HYPER_WARNING"));
+    } else {
+        bool isWarning = isTemperatureWarning(temperature);
+        if (isWarning) {
+            if (temperature < 36.0 + TEMP_WARNING_TOLERANCE) {
+                alert(getMessage("TEMP_HYPO_WARNING"));
+            } else {
+                alert(getMessage("TEMP_HYPER_WARNING"));
+            }
         }
     }
 }
